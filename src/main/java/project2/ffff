@@ -1,0 +1,110 @@
+package project2;
+
+
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+
+
+/**
+ * Created by DotinSchool2 on 10/20/2015.
+ */
+public class GreetingServer implements Runnable {
+    private final static Logger LOGGER = Logger.getLogger(GreetingServer.class.getName());
+
+    StringBuilder logContent = new StringBuilder();
+    private ServerSocket serverSocket;
+    ArrayList<Deposit> deposits;
+    Handler fileHandler = null;
+
+    public GreetingServer(int port, ArrayList<Deposit> deposits) throws IOException {
+        this.deposits = deposits;
+        serverSocket = new ServerSocket(port);
+        serverSocket.setSoTimeout(10000);
+    }
+
+    public void run() {
+        FileWriter file;
+        //todo rename this, use Time and Date instead
+        Calendar cal = Calendar.getInstance();
+
+        while (true) {
+            try {
+                //  fileHandler  = new FileHandler("./javacodegeeks.log");
+                // LOGGER.addHandler(fileHandler);
+                //khandane file hesabha
+                file = new FileWriter("serverlog.txt", true);
+                logContent.append(cal.getTime()).append(" Server is Waiting for client on port ").append(serverSocket.getLocalPort()).append("\n");
+                Socket server = serverSocket.accept();
+                //todo put below lines into another method
+                String terminalId = processInputObject(server);
+                processInputObject(server);
+                server.close();
+                logContent.append("end of connection to terminal:\n").append(terminalId);
+                file.write(logContent.toString());
+                file.close();
+            } catch (SocketTimeoutException s) {
+                System.out.println("Socket timed out!");
+                break;
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String processInputObject(Socket server) throws IOException, ClassNotFoundException {
+        DataOutputStream output = new DataOutputStream(server.getOutputStream());
+        DataInputStream input = new DataInputStream(server.getInputStream());
+        int numberOfTransactions = input.readInt();
+        String terminalId = input.readUTF();
+        logContent.append("Just connected to ").append(server.getRemoteSocketAddress()).append(" terminalId:").append(terminalId).append("\n");
+        ObjectInputStream in = new ObjectInputStream(server.getInputStream());
+
+        //khandane transaction haye ferestade shode az client
+        for (int i = 0; i < numberOfTransactions; i++) {
+            Transaction transaction = (Transaction) in.readObject();
+            logContent.append("recieved Transaction -->transactionId:")
+                    .append(transaction.transactionId).append(" Transaction type:")
+                    .append(transaction.transactionType).append(" terminalid:").append(transaction.terminalId).append("\n");
+            Deposit deposit = TransactionHandler.findDeposit(deposits, transaction);
+            //todo rename this to validated
+            boolean validity = TransactionHandler.checkValidity(transaction.amount, deposit.initialBalance, deposit.upperBound);
+            if (validity) {
+                deposits = TransactionHandler.calculate(deposits, transaction);
+                logContent.append("Transaction  succeeded");
+                output.writeBytes("Transactionid " + transaction.transactionId + " succeeded\n");
+            } else {
+                logContent.append("invalid  Transaction \n");
+                output.writeBytes("Transactionid " + transaction.transactionId + " failed\n");
+            }
+            logContent.append("end of transaction-Transactionid:").append(transaction.transactionId).append("\n");
+        }
+        return terminalId;
+    }
+
+    public static void main(String[] args) throws IOException {
+        int port = 123;
+        JsonParser jsonparser = new JsonParser();
+        ArrayList<Deposit> deposits = jsonparser.deposits;
+        Thread server = new Thread(new GreetingServer(port, deposits));
+        Thread client = new Thread(new GreetingClient(), "name1");
+
+        //Thread client2 = new Thread(new GreetingClient(), "name2");
+
+        server.start();
+
+        client.start();
+        // client2.start();
+
+
+    }
+}

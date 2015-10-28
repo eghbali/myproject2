@@ -1,0 +1,17 @@
+Wed Oct 28 12:02:27 IRST 2015 Server is Waiting for client on port 123
+Just connected to /127.0.0.1:50322 terminalId:21374
+recieved Transaction -->transactionId:1 Transaction type:deposit terminalid:21374
+Transactionid 1 succeeded
+end of transaction:1
+recieved Transaction -->transactionId:2 Transaction type:withdraw terminalid:21374
+invalid  Transaction 
+end of transaction:2
+end of connection to terminal:21374Wed Oct 28 12:02:27 IRST 2015 Server is Waiting for client on port 123
+Just connected to /127.0.0.1:50323 terminalId:21374
+recieved Transaction -->transactionId:1 Transaction type:deposit terminalid:21374
+Transactionid 1 succeeded
+end of transaction:1
+recieved Transaction -->transactionId:2 Transaction type:withdraw terminalid:21374
+invalid  Transaction 
+end of transaction:2
+end of connection to terminal:21374
