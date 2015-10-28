@@ -14,7 +14,7 @@ import static project2.TransactionHandler.*;
 /**
  * Created by DotinSchool2 on 10/20/2015.
  */
-public class GreetingServer implements Runnable {
+public class GreetingServer extends Thread {
     private ServerSocket serverSocket;
     ArrayList<Deposit> deposits;
 
@@ -35,6 +35,7 @@ public class GreetingServer implements Runnable {
                 StringBuilder logContent = new StringBuilder();
                 logContent.append((new Date()).toString()).append(" Server is Waiting for client on port ").append(serverSocket.getLocalPort()).append("\n");
                 Socket server = serverSocket.accept();
+               System.out.println( this.getName());
                 processTerminalRequests(logContent, server);
                 server.close();
             } catch (SocketTimeoutException s) {
@@ -64,10 +65,12 @@ public class GreetingServer implements Runnable {
         DataInputStream input = new DataInputStream(server.getInputStream());
         int numberOfTransactions = input.readInt();
         String terminalId = input.readUTF();
-        logContent.append("Just connected to ").append(server.getRemoteSocketAddress()).append(" terminalId:").append(terminalId).append("\n");
+        logContent.append("Just connected to ").append(server.getRemoteSocketAddress())
+                .append(" terminalId:").append(terminalId).append("\n");
         ObjectInputStream in = new ObjectInputStream(server.getInputStream());
         //  String terminalId=input.readUTF((DataInput) server.getInputStream());
         //khandane transaction haye ferestade shode az client
+
         for (int i = 0; i < numberOfTransactions; i++) {
             Transaction transaction = (Transaction) in.readObject();
             logContent.append("recieved Transaction -->transactionId:")

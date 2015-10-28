@@ -9,7 +9,7 @@ import java.util.Calendar;
  * Created by DotinSchool2 on 10/20/2015.
  */
 
-public class GreetingClient implements Runnable {
+public class GreetingClient extends Thread {
     String serverName = "localhost";
     int port;
 

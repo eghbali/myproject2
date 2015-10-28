@@ -47,8 +47,7 @@ public class JsonParser {
     }
 
     public static void main(String[] args) throws IOException {
-        JsonParser x = new JsonParser();
-        x.readFile();
+
         //System.out.println(x.deposits.get(1).customer);
 
     }

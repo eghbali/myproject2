@@ -36,15 +36,10 @@ public class XmlParser {
 
             String terminalId = ((Element) doc.getElementsByTagName("terminal").item(0)).getAttribute("id");
             String terminalType = ((Element) doc.getElementsByTagName("terminal").item(0)).getAttribute("type");
-            System.out.println("terminal Id:   " + terminalId + "...");
-            System.out.println("terminal Type:   " + terminalType + "...");
             Node server = doc.getElementsByTagName("server").item(0);
             String serverIp = ((Element) doc.getElementsByTagName("server").item(0)).getAttribute("ip");
             String serverPort = ((Element) doc.getElementsByTagName("server").item(0)).getAttribute("port");
-            System.out.println("server Ip:   " + serverIp + "...");
-            System.out.println("port:   " + serverPort + "...");
             String outLog = ((Element) doc.getElementsByTagName("outLog").item(0)).getAttribute("path");
-            System.out.println("outLog path:   " + outLog + "...");
             NodeList transactions = doc.getElementsByTagName("transaction");
             for (int i = 0; i < transactions.getLength(); i++) {
                 Node n = transactions.item(i);
@@ -54,8 +49,8 @@ public class XmlParser {
                     String transactionType = element.getAttribute("type");
                     Integer transactionamount = Integer.parseInt(element.getAttribute("amount"));
                     String transactiondeposit = element.getAttribute("deposit");
-                    System.out.println("transactionId:   " + transactionId + "...");
-                    Transaction transaction = new Transaction(terminalId, terminalType, serverIp, serverPort, outLog, transactionId, transactionType, transactionamount, transactiondeposit);
+                    Transaction transaction = new Transaction(terminalId, terminalType, serverIp, serverPort,
+                            outLog, transactionId, transactionType, transactionamount, transactiondeposit);
                     transactionList.add(transaction);
 //                     getElementsByTagName("transaction").item(0).getTextContent();
 //                    System.out.println(i +"  terminal id: "+ x);
