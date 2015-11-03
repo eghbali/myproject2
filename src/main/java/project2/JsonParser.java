@@ -14,9 +14,6 @@ public class JsonParser {
     int portvalue;
     String outLog;
 
-    public JsonParser() {
-
-    }
 
     public ArrayList<Deposit> readFile() throws IOException {
         ArrayList deposits = new ArrayList();
@@ -46,11 +43,6 @@ public class JsonParser {
         return deposits;
     }
 
-    public static void main(String[] args) throws IOException {
-
-        //System.out.println(x.deposits.get(1).customer);
-
-    }
 
 }
 

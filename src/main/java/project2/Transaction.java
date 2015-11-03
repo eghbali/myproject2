@@ -11,23 +11,24 @@ public class Transaction implements Serializable {
     String terminalType;
     String outLogPass;
     String serverIp;
-    String port;
+    int port;
     String transactionId;
     String transactionType;
     Integer amount;
     String deposit;
 
-    public Transaction(String inputTrminalId, String inputTerminalType, String inputOutLogPass, String inputServerIp, String inputPort, String inputTransactionId, String inputTtansactionType, int inputAmount, String inputDeposit) {
+    public Transaction(String terminalId, String terminalType,String outLogPass, String serverIp, int port,String transactionId,
+                       String transactionType, Integer amount,String deposit) {
 
-        terminalId = inputTrminalId;
-        terminalType = inputTerminalType;
-        outLogPass = inputOutLogPass;
-        serverIp = inputServerIp;
-        port = inputPort;
-        transactionId = inputTransactionId;
-        transactionType = inputTtansactionType;
-        amount = inputAmount;
-        deposit = inputDeposit;
+        this.terminalId =terminalId;
+        this.terminalType = terminalType;
+       this.outLogPass = outLogPass;
+        this.serverIp =serverIp;
+        this.port = port;
+        this.transactionId =transactionId;
+        this.transactionType = transactionType;
+        this.amount =amount;
+        this.deposit =deposit;
 
     }
 

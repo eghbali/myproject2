@@ -1,67 +1,87 @@
 package project2;
 
+
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Calendar;
-
-/**
- * Created by DotinSchool2 on 10/20/2015.
- */
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GreetingClient extends Thread {
     String serverName = "localhost";
     int port;
+    String inputFileName;
+    Logger logger;
 
-    public GreetingClient() {
-        port = 123;
+    // Logger logger = Logger.getLogger(GreetingClient.class.getName());
+    public GreetingClient(int port, String inputFileName) {
+        this.port = port;
+        this.inputFileName = inputFileName;
+        //  logger.setLevel(Level.SEVERE);
     }
 
     @Override
     public void run() {
-
         try {
-            Calendar cal = Calendar.getInstance();
-            //  System.out.println("  the name is*************" + this.getClass().getName());
-            //file.write("Connecting to " + serverName + " on port " + port + " Current time is : " + cal.getTime() + "\n");
+
+
+            Handler fileHandler = new FileHandler(extractOutlogPassFromFile(), true);
+            logger = Logger.getLogger(GreetingServer.class.getName());
+            logger.addHandler(fileHandler);
+            int port = extractPortNumberFromFile();
+            System.out.println(Thread.currentThread().getName() + ": " + "Client  has been started");
+            logger.log(Level.INFO, Thread.currentThread().getName() +"Connecting to " + serverName + " on port " + port +  "\n");
             Socket client = new Socket(serverName, port);
+            String terminal=extractTerminalIDFromFile();
             //khandane file terminal va sakhtane liste transaction ha
-            FileWriter file = sendTerminalTransactions(client);
+            sendTerminalTransactions(client);
+            System.out.println(Thread.currentThread().getName() + terminal +": has sent all of its transactions");
+          // client.close();
+            logger.log(Level.INFO,  terminal+"end of connection to " + client.getRemoteSocketAddress() + "\n");
 
-            client.close();
 
-            file.write("end of connection to " + client.getRemoteSocketAddress() + cal.getTime() + "\n");
-            file.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private FileWriter sendTerminalTransactions(Socket client) throws IOException {
-        Calendar cal = Calendar.getInstance();
-        XmlParser FileReader = new XmlParser("input.xml");
+    public String extractOutlogPassFromFile() {
+        XmlParser fileReader = new XmlParser(inputFileName);
+        fileReader.readXmlFile();
+        return fileReader.outLog;
+    }
+
+    public int extractPortNumberFromFile() {
+        XmlParser fileReader = new XmlParser(inputFileName);
+        fileReader.readXmlFile();
+        return fileReader.serverPort;
+    }
+    public String extractTerminalIDFromFile() {
+        XmlParser fileReader = new XmlParser(inputFileName);
+        fileReader.readXmlFile();
+        return fileReader.terminalId;
+    }
+
+    private void sendTerminalTransactions(Socket client) throws IOException {
+        XmlParser FileReader = new XmlParser(inputFileName);
         ArrayList<Transaction> transactions = FileReader.readXmlFile();
-        FileWriter file = new FileWriter("terminallog.txt", true);
-        file.write("Just connected to " + client.getRemoteSocketAddress() + cal.getTime() + "\n");
+        logger.log(Level.INFO, Thread.currentThread().getName()+"Just connected to " + client.getRemoteSocketAddress() + "\n");
         DataInputStream input = new DataInputStream(client.getInputStream());
         DataOutputStream output = new DataOutputStream(client.getOutputStream());
         output.writeInt(transactions.size());
         output.writeUTF(transactions.get(0).terminalId);
         ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-        for (int i = 0; i < transactions.size(); i++) {
-            file.write("sending transaction---> transactionid:" + transactions.get(i).transactionId + "\n");
-            out.writeObject(transactions.get(i));
+        for (Transaction transaction : transactions) {
+            logger.log(Level.INFO,Thread.currentThread().getName()+ "sending transaction--- transactionid:" + transaction.transactionId + "\n");
+            System.out.println(Thread.currentThread().getName()+"sending transaction"+transaction.terminalId+"  "+(transaction.transactionId));
+            out.writeObject(transaction);
             //System.out.println(input.readUTF());
-            file.write(input.readUTF());
+
+           // logger.log(Level.INFO, input.readUTF());
+
         }
-        return file;
-    }
 
-    public static ArrayList<Transaction> createTransactionsList() {
-        ArrayList<Transaction> transactions = new ArrayList<Transaction>();
-        XmlParser transactionReader = new XmlParser("terminal.xml");
-        transactionReader.readXmlFile();
-        return transactions;
     }
-
 }
