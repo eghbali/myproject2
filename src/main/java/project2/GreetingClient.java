@@ -1,6 +1,19 @@
 package project2;
 
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -11,77 +24,96 @@ import java.util.logging.Logger;
 
 public class GreetingClient extends Thread {
     String serverName = "localhost";
-    int port;
+
     String inputFileName;
     Logger logger;
 
-    // Logger logger = Logger.getLogger(GreetingClient.class.getName());
-    public GreetingClient(int port, String inputFileName) {
-        this.port = port;
+
+    public GreetingClient(String inputFileName) {
+
         this.inputFileName = inputFileName;
-        //  logger.setLevel(Level.SEVERE);
+
     }
 
     @Override
     public void run() {
         try {
 
-
-            Handler fileHandler = new FileHandler(extractOutlogPassFromFile(), true);
-            logger = Logger.getLogger(GreetingServer.class.getName());
+            XmlParser terminalFile = new XmlParser(inputFileName);
+            Handler fileHandler = new FileHandler(terminalFile.extractOutlogPassFromFile(), true);
+            logger = Logger.getLogger(GreetingClient.class.getName());
+            logger.setUseParentHandlers(false);
             logger.addHandler(fileHandler);
-            int port = extractPortNumberFromFile();
+            int port = terminalFile.extractPortNumberFromFile();
             System.out.println(Thread.currentThread().getName() + ": " + "Client  has been started");
-            logger.log(Level.INFO, Thread.currentThread().getName() +"Connecting to " + serverName + " on port " + port +  "\n");
+            logger.log(Level.INFO, Thread.currentThread().getName() + "Connecting to " + serverName + " on port " + port + "\n");
             Socket client = new Socket(serverName, port);
-            String terminal=extractTerminalIDFromFile();
-            //khandane file terminal va sakhtane liste transaction ha
+            String terminal = terminalFile.extractTerminalIDFromFile();
             sendTerminalTransactions(client);
-            System.out.println(Thread.currentThread().getName() + terminal +": has sent all of its transactions");
-          // client.close();
-            logger.log(Level.INFO,  terminal+"end of connection to " + client.getRemoteSocketAddress() + "\n");
+            System.out.println(Thread.currentThread().getName() + terminal + ": has sent all of its transactions");
+            // client.close();
+            logger.log(Level.INFO, terminal + "end of connection to " + client.getRemoteSocketAddress() + "\n");
 
 
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
         }
     }
 
-    public String extractOutlogPassFromFile() {
-        XmlParser fileReader = new XmlParser(inputFileName);
-        fileReader.readXmlFile();
-        return fileReader.outLog;
-    }
+    private void sendTerminalTransactions(Socket client) throws IOException, ParserConfigurationException, TransformerException {
 
-    public int extractPortNumberFromFile() {
-        XmlParser fileReader = new XmlParser(inputFileName);
-        fileReader.readXmlFile();
-        return fileReader.serverPort;
-    }
-    public String extractTerminalIDFromFile() {
-        XmlParser fileReader = new XmlParser(inputFileName);
-        fileReader.readXmlFile();
-        return fileReader.terminalId;
-    }
-
-    private void sendTerminalTransactions(Socket client) throws IOException {
+        // ????????????????????????
+//            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+//            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+//            Document doc = docBuilder.newDocument();
+//            Element rootElement = doc.createElement("Transactions");
+//            doc.appendChild(rootElement);
         XmlParser FileReader = new XmlParser(inputFileName);
+        FileWriter response = new FileWriter("response.xml", true);
         ArrayList<Transaction> transactions = FileReader.readXmlFile();
-        logger.log(Level.INFO, Thread.currentThread().getName()+"Just connected to " + client.getRemoteSocketAddress() + "\n");
-        DataInputStream input = new DataInputStream(client.getInputStream());
-        DataOutputStream output = new DataOutputStream(client.getOutputStream());
-        output.writeInt(transactions.size());
-        output.writeUTF(transactions.get(0).terminalId);
+        DataInputStream inputResult = new DataInputStream(client.getInputStream());
+        logger.log(Level.INFO, Thread.currentThread().getName() + "Just connected to " + client.getRemoteSocketAddress() + "\n");
         ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+        response.write("<Transactions>\n");
         for (Transaction transaction : transactions) {
-            logger.log(Level.INFO,Thread.currentThread().getName()+ "sending transaction--- transactionid:" + transaction.transactionId + "\n");
-            System.out.println(Thread.currentThread().getName()+"sending transaction"+transaction.terminalId+"  "+(transaction.transactionId));
+
+            logger.log(Level.INFO, Thread.currentThread().getName() + "sending transaction--- transactionid:" + transaction.transactionId + "\n");
+            System.out.println(Thread.currentThread().getName() + "sending transaction" + transaction.terminalId + "  " + (transaction.transactionId));
             out.writeObject(transaction);
-            //System.out.println(input.readUTF());
+            String transactionResult;
+            int transactionStatus = inputResult.read();
+            if (transactionStatus == 1) {
+                transactionResult = "successful";
+            } else {
+                transactionResult = "Fail";
+            }
+            System.out.println("result of transaction:" + transaction.transactionId + " is: " + transactionResult);
+            //??????????????????
+//                Element transactionInfo = doc.createElement("Transaction");
+//                rootElement.appendChild(transactionInfo);
+//                transactionInfo.setAttribute("Id",transaction.transactionId);
+//                transactionInfo.setAttribute("result:",transactionResult);
 
-           // logger.log(Level.INFO, input.readUTF());
-
+            response.write("<Transaction id= \"" + transaction.transactionId + "\" result=\"" + transactionResult + "\"/>\n");
         }
+        response.write("</Transactions>\n");
+        response.close();
+        out.writeObject(null);
+        //????????????????
+//               // write the content into xml file
+//        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+//        Transformer transformer = transformerFactory.newTransformer();
+//        DOMSource source = new DOMSource(doc);
+//        StreamResult result = new StreamResult(new File("file.xml"));
+//        // Output to console for testing
+//        // StreamResult result = new StreamResult(System.out);
+//        transformer.transform(source, result);
+//        System.out.println("File saved!");
 
     }
+
 }

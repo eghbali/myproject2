@@ -4,6 +4,7 @@ import com.google.gson.stream.JsonReader;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 /**
@@ -34,8 +35,8 @@ public class JsonParser {
             jsonReader.nextName();
             int upperBound = jsonReader.nextInt();
             jsonReader.endObject();
-            deposits.add(new Deposit(customer, id, initialBalance, upperBound));
-            //  Deposit deposit=new Deposit();
+            deposits.add(new Deposit(customer, id, new BigDecimal(initialBalance), new BigDecimal(upperBound)));
+
         }
         jsonReader.endArray();
         jsonReader.nextName();

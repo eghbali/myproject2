@@ -1,17 +1,15 @@
 package project2;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
-/**
- * Created by DotinSchool2 on 10/26/2015.
- */
 public class Deposit implements Serializable {
     String customer;
     String id;
-    int initialBalance;
-    int upperBound;
+    BigDecimal initialBalance;
+    BigDecimal upperBound;
 
-    public Deposit(String customerName, String customerId, int customerInitialBalance, int upperBoundValue) {
+    public Deposit(String customerName, String customerId, BigDecimal customerInitialBalance, BigDecimal upperBoundValue) {
         customer = customerName;
         id = customerId;
         initialBalance = customerInitialBalance;
