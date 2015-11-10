@@ -121,7 +121,7 @@ public class Service extends Thread {
 
                 if ((transactionAmount.add(depositAmount)).compareTo(new BigDecimal(1000000)) >= 0) {
                     result = false;
-                    throw new DepositException("UpperBound exception");
+                    System.err.println("UpperBound exception");
 
                 } else {
                     deposits.get(deposits.indexOf(targetDeposit)).initialBalance = transactionAmount.add(depositAmount);
@@ -133,7 +133,7 @@ public class Service extends Thread {
                     result = true;
                 } else {
 
-                    throw new DepositException("Deposit Amount is not enough for withdraw");
+                     System.err.println("Deposit Amount is not enough for withdraw"+transaction.transactionId);
                 }
             }
 

@@ -73,7 +73,7 @@ public class GreetingClient extends Thread {
 //            Element rootElement = doc.createElement("Transactions");
 //            doc.appendChild(rootElement);
         XmlParser FileReader = new XmlParser(inputFileName);
-        FileWriter response = new FileWriter("response.xml", true);
+        FileWriter response = new FileWriter(inputFileName+"response.xml", true);
         ArrayList<Transaction> transactions = FileReader.readXmlFile();
         DataInputStream inputResult = new DataInputStream(client.getInputStream());
         logger.log(Level.INFO, Thread.currentThread().getName() + "Just connected to " + client.getRemoteSocketAddress() + "\n");
